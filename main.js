@@ -48,36 +48,62 @@ window.fbAsyncInit = function () {
 let myFunction = function () {
     let myAccessToken = "";
     let userId = "";
+    let cubsGroupId = 766394103749626;
 
 
 
-    FB.login(function(response){
+    FB.login(function (response) {
         console.log(response)
         myAccessToken = response.authResponse.accessToken
         userId = response.authResponse.userID
-      },
-      {
-        scope: 'user_friends, user_posts, groups_access_member_info, publish_to_groups',
-        return_scopes: true
-    });
+    },
+        {
+            scope: 'user_friends, user_posts, groups_access_member_info, publish_to_groups',
+            return_scopes: true
+        });
 
 
 
 
-    $("body").append($("<button>").text("Run").on("click", function(){
+    $("body").append($("<button>").text("Run").on("click", function () {
 
-        $.ajax({
-            url: `https://graph.facebook.com/${userId}/feed/?redirect=false&access_token=${myAccessToken}`,
-            method: "GET",
-        })
-        .then(results => {
+
+        let contentObj = {}
+        let getPosts = function (results) {
             console.log(results)
+            for (let i = 0; i < results[0].data.length; i++) {
+                $.ajax({
+                    url: `https://graph.facebook.com/${results[0].data[i].id}/?redirect=false&access_token=${myAccessToken}`,
+                    method: "GET",
+                })
+                    .then(myPost => {
+                        console.log(myPost)
+                        contentObj[myPost[id]] = {};
+                        for (item in myPost) {
+                            contentObj[myPost[id]][item] = myPost[item]
+                        }
+                    })
+
+            }
+        }
+
+
+        let getPostIds = function (pageId) {
+            return $.ajax({
+                url: `https://graph.facebook.com/${pageId}/feed/?redirect=false&access_token=${myAccessToken}`,
+                method: "GET",
+            })
+        }
+
+
+
+        Promise.all([getPostIds(cubsGroupId)]).then(results => {
+            console.log("check")
+            getPosts(results)
+        }).then(results => {
+
+            console.log(contentObj)
         })
-    }))
-
-
+    })
+    )
 }
-
-
-
-
